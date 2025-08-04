@@ -17,7 +17,7 @@ If you work with AI assistants across multiple projects, you've probably experie
 - **Lost session context** - Starting over when switching between AI chats
 - **Configuration drift** - AI setups becoming inconsistent across projects over time
 
-Marvin solves this by providing a **layered configuration system** that can be deployed to multiple AI tools consistently.
+Marvin attempts to make you feel better about this by providing a **layered configuration system** that can be deployed to multiple AI tools consistently.
 
 ## Quick Start
 
@@ -58,7 +58,7 @@ marvin sync my-project claude
 Marvin uses a four-layer configuration system:
 
 1. **Global** - Your identity, working style, universal preferences
-2. **Domain** - Configurations for types of work (coding, writing, research)
+2. **Domain** - Configurations for types of work (coding, writing, research, rpgcampaigns, etc.)
 3. **Project** - Specific context for individual projects
 4. **Session** - Temporary context for current work (auto-managed)
 
@@ -69,7 +69,7 @@ Deploy configurations to multiple AI tools:
 - **Cursor IDE** - Rules files for coding assistance
 - **Claude Projects** - Knowledge base and custom instructions  
 - **Claude Code** - Terminal-based AI development
-- **Custom integrations** - Extensible to other AI tools
+- **Custom integrations** - Extensible to other tools that you may use AI for (e.g., Obsidian for notes)
 
 ### Smart Context Management
 
@@ -111,6 +111,12 @@ After setup, you'll have:
 - Research domain with analysis frameworks and citation standards
 - Project-specific research questions and source organization
 - Consistent AI assistance for literature review, analysis, and writing
+
+### TTRPG Game Master
+- Global identity with gamemastering background and system preferences
+- RPG domain with system-specific guidelines
+- Project-specific context for campaigns, players, etc.
+- Deployment into a location for content and notes (e.g., an Obsidian Vault)
 
 ## Commands
 
