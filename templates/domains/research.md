@@ -1,4 +1,4 @@
-# Research Domain Configuration
+# Research Domain Configuration 🔬
 
 ## Research Philosophy
 

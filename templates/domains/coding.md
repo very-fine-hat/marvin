@@ -1,4 +1,4 @@
-# Coding Domain Configuration
+# Coding Domain Configuration 💻
 
 ## Programming Philosophy
 

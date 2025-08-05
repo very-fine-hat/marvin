@@ -1,4 +1,5 @@
-# Project Context: {{PROJECT_NAME}}
+# Project Context: {{PROJECT_NAME}} ‼
+*NOTE: each project should probabably have its own m&m emoji*
 
 ## Project Overview
 

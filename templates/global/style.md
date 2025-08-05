@@ -1,4 +1,4 @@
-# AI Interaction Style Guide
+# AI Interaction Style Guide 😎
 
 ## Response Preferences
 

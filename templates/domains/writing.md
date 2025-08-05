@@ -1,4 +1,4 @@
-# Writing Domain Configuration
+# Writing Domain Configuration ✍️
 
 ## Writing Philosophy
 

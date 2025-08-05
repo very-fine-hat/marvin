@@ -1,4 +1,4 @@
-# AI Safety Rules and Boundaries
+# AI Safety Rules and Boundaries ⛑️
 
 ## Critical Safety Rules
 
