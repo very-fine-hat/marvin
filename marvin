@@ -15,10 +15,25 @@ FRAMEWORK_DIR="$MARVIN_HOME/framework"
 CONFIGS_DIR="$MARVIN_HOME/configs"
 TOOLS_DIR="$FRAMEWORK_DIR/tools"
 
+# Version info
+VERSION="1.0.0"
+VERSION_FILE="$FRAMEWORK_DIR/.version"
+
 echo_color() {
     local color=$1
     shift
     echo -e "${color}$*${NC}"
+}
+
+get_version() {
+    if [[ -f "$VERSION_FILE" ]]; then
+        cat "$VERSION_FILE"
+    elif [[ -d "$FRAMEWORK_DIR/.git" ]]; then
+        cd "$FRAMEWORK_DIR"
+        git describe --tags --always 2>/dev/null || echo "unknown"
+    else
+        echo "$VERSION"
+    fi
 }
 
 show_help() {
@@ -36,6 +51,8 @@ COMMANDS:
     sync <project> <tool>   Deploy configurations to AI tool
     validate                Check configuration consistency
     status                  Show configuration status
+    update                  Update Marvin framework from GitHub
+    version                 Show version information
     help                    Show this help message
 
 EXAMPLES:
@@ -45,6 +62,8 @@ EXAMPLES:
     marvin create webapp coding         # New project from template
     marvin sync myapp cursor            # Deploy to Cursor IDE
     marvin validate                      # Check all configs
+    marvin update                        # Update framework
+    marvin version                       # Show version
 
 CONFIGURATION LAYERS:
     global/     - Universal identity and preferences
@@ -59,7 +78,7 @@ SUPPORTED TOOLS:
     custom      - Custom AI tool integrations
 
 Get started: marvin init
-Documentation: https://github.com/yourusername/marvin
+Documentation: https://github.com/very-fine-hat/marvin
 
 "I've calculated your chance of survival, but I don't think you'll like it." - Marvin
 EOF
@@ -80,6 +99,101 @@ shift || true
 case "$COMMAND" in
     "help"|"-h"|"--help")
         show_help
+        ;;
+    
+    "version"|"-v"|"--version")
+        echo_color $BLUE "🤖 Marvin AI Configuration Management"
+        echo "Version: $(get_version)"
+        echo "Framework: $FRAMEWORK_DIR"
+        
+        if [[ -d "$FRAMEWORK_DIR/.git" ]]; then
+            cd "$FRAMEWORK_DIR"
+            echo "Repository: $(git remote get-url origin 2>/dev/null || echo 'unknown')"
+            echo "Branch: $(git branch --show-current 2>/dev/null || echo 'unknown')"
+            echo "Last commit: $(git log -1 --format='%h %s' 2>/dev/null || echo 'unknown')"
+        fi
+        ;;
+    
+    "update")
+        echo_color $BLUE "🔄 Updating Marvin framework..."
+        
+        # Check if framework directory exists
+        if [[ ! -d "$FRAMEWORK_DIR" ]]; then
+            echo_color $RED "❌ Framework directory not found: $FRAMEWORK_DIR"
+            echo "   Run 'marvin init' first to set up Marvin."
+            exit 1
+        fi
+        
+        cd "$FRAMEWORK_DIR"
+        
+        # Check if we're in a git repository
+        if [[ ! -d .git ]]; then
+            echo_color $RED "❌ Framework directory is not a git repository"
+            echo "   Expected git repository at: $FRAMEWORK_DIR"
+            echo "   Try cloning fresh:"
+            echo "   rm -rf $FRAMEWORK_DIR"
+            echo "   git clone https://github.com/very-fine-hat/marvin.git $FRAMEWORK_DIR"
+            exit 1
+        fi
+        
+        # Check for uncommitted changes
+        if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+            echo_color $YELLOW "⚠️  Framework has uncommitted changes:"
+            git status --short
+            echo
+            read -p "Continue anyway? This may lose local changes. (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Update cancelled."
+                exit 0
+            fi
+        fi
+        
+        # Store current version for comparison
+        OLD_VERSION=$(get_version)
+        
+        # Update from remote
+        echo_color $BLUE "📥 Pulling latest changes from GitHub..."
+        if ! git fetch origin 2>/dev/null; then
+            echo_color $RED "❌ Failed to fetch from remote repository"
+            echo "   Check your internet connection and repository access."
+            exit 1
+        fi
+        
+        # Check if we're behind
+        LOCAL=$(git rev-parse HEAD 2>/dev/null)
+        REMOTE=$(git rev-parse origin/main 2>/dev/null || git rev-parse origin/master 2>/dev/null)
+        
+        if [[ "$LOCAL" == "$REMOTE" ]]; then
+            echo_color $GREEN "✅ Marvin is already up to date!"
+            echo "   Current version: $OLD_VERSION"
+            exit 0
+        fi
+        
+        # Apply updates
+        if ! git reset --hard "$REMOTE" 2>/dev/null; then
+            echo_color $RED "❌ Failed to apply updates"
+            echo "   You may need to resolve conflicts manually."
+            exit 1
+        fi
+        
+        # Make sure scripts are executable
+        chmod +x marvin setup 2>/dev/null || true
+        if [[ -d tools ]]; then
+            chmod +x tools/* 2>/dev/null || true
+        fi
+        
+        NEW_VERSION=$(get_version)
+        
+        echo_color $GREEN "✅ Marvin framework updated successfully!"
+        echo
+        echo "Previous version: $OLD_VERSION"
+        echo "Current version:  $NEW_VERSION"
+        echo
+        echo "Changes applied:"
+        git log --oneline "$LOCAL..$REMOTE" 2>/dev/null | head -5
+        echo
+        echo_color $BLUE "💡 Run 'marvin status' to verify everything is working."
         ;;
     
     "init")
@@ -162,8 +276,7 @@ case "$COMMAND" in
         check_setup
         echo_color $BLUE "🤖 Marvin Configuration Status"
         echo
-        
-        # Show basic info
+        echo "Version: $(get_version)"
         echo "Framework: $FRAMEWORK_DIR"
         echo "Configs:   $CONFIGS_DIR"
         echo
@@ -171,7 +284,7 @@ case "$COMMAND" in
         # Check git status
         cd "$CONFIGS_DIR"
         if [[ -d .git ]]; then
-            echo_color $GREEN "Git status:"
+            echo_color $GREEN "Personal configs git status:"
             git status --short || true
             echo
         fi
