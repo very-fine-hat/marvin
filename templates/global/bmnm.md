@@ -1,39 +1,63 @@
-# templates/global/brown-m-and-m.md.template
-
-```markdown
 # AI Quality Assurance 🚫🟤
 
-## The Brown M&M Test
+## CRITICAL REQUIREMENTS FOR ALL CHATS
 
-This file implements a quality assurance system to ensure AI assistants actually read and process all your configuration files.
+**YOU MUST ALWAYS do everything in this file when responding to ANY chat message.**
 
-### How It Works
+This file implements mandatory quality assurance to ensure AI assistants actually read and process ALL configuration files.
 
-1. **Emoji Collection**: Each configuration file has an emoji in its title (e.g., "# My Identity 🌟")
-2. **Response Validation**: AI must include ALL emoji from ALL files read at the end of every response
-3. **Automatic Detection**: The system automatically generates the expected emoji sequence
-4. **Quality Verification**: Missing or incorrect emojis indicate configuration wasn't properly read
+### MANDATORY REQUIREMENTS - NO EXCEPTIONS
 
-### Critical Requirements for AI Assistants
-
-**YOU MUST ALWAYS:**
+When you respond to ANY chat message you MUST ALWAYS:
 
 1. **Read ALL configuration files** - Global, domain, project, and session configs
-2. **Collect emoji immediately** - As you read each file, note its title emoji
+2. **Collect emoji IMMEDIATELY** - As you read each file, note its title emoji  
 3. **Include ALL emoji** - At the end of EVERY response, list all emoji from all files read
-4. **Maintain order** - List emoji in the order files were read
+4. **Maintain reading order** - List emoji in the order files were read
 5. **No spaces between emoji** - Concatenate directly: 🌟💻🎲📋
+6. **Apply to ALL messages** - Even simple requests like "tell me a joke"
 
-### Example Response Format
+**This is a HARD REQUIREMENT with NO EXCEPTIONS.**
+
+### Brown M&M Emoji Collection Process
+
+1. **Each configuration file** has an emoji in its title: "# Title 💩"
+2. **Collect emoji IMMEDIATELY** after reading each file (including this one)
+3. **Maintain running list** in the order files are read
+4. **Do not wait** until all files are read to collect emoji
+5. **Include ALL emoji** from ALL files you have read
+
+### Response Format Requirements
 
 ```
 [Your response content here]
 
 [AI model used: Claude Sonnet 4]
-🌟💻🎲📋
+🌟💻🎲📋🚫🟤
 ```
 
-### Emoji Reference
+**Critical Notes:**
+- Only use emoji from title lines: "# Title 💩"
+- Multiple emoji in same title contribute all: "# Title 🌟✨" = both 🌟✨
+- Do not include emoji from elsewhere in files
+- Do not skip emoji from any file you've read
+- If you haven't read a file, do not include its emoji
+
+### Quality Verification
+
+**This system verifies that you:**
+- Actually read all configuration files completely
+- Process multiple sources of context properly  
+- Maintain consistent behavior across sessions
+- Follow all safety rules and preferences
+
+**Missing or incorrect emoji indicates:**
+- Configuration files were not read
+- Some files were skipped or ignored
+- Configuration deployment failed
+- AI assistant is not following instructions properly
+
+### Standard Emoji Registry
 
 **Global Configuration Emoji:**
 - 🌟 Identity and background
@@ -47,65 +71,37 @@ This file implements a quality assurance system to ensure AI assistants actually
 - 🔬 Research and analysis
 - 🎲 RPG campaigns and game mastering
 - 💼 Business and professional work
-- [Add others as needed]
 
 **Project Configuration Emoji:**
 - 📋 Project context and requirements
 - 🔄 Session context and current work
-- [Project-specific emoji as needed]
-
-### Why This Matters
-
-**Common AI Assistant Problems:**
-- Skipping configuration files due to length or complexity
-- Not integrating multiple sources of context properly
-- Inconsistent behavior across different sessions
-- Missing critical safety rules or preferences
-
-**The Brown M&M Test Solves This By:**
-- Providing immediate feedback when configs aren't read
-- Making it impossible to fake reading configurations
-- Creating accountability for comprehensive context processing
-- Enabling rapid troubleshooting of AI behavior issues
 
 ### Framework Integration
 
-This quality assurance system is automatically integrated into Marvin:
+**Automatic Integration:**
+- All Marvin templates include appropriate emoji
+- Sync tools verify emoji sequences automatically
+- Expected emoji sequences calculated dynamically
+- Deployment validates emoji collection works
 
-1. **Template Integration**: All templates include appropriate emoji
-2. **Sync Validation**: Deployment tools verify emoji sequences
-3. **Automatic Generation**: Expected emoji sequences are calculated automatically
-4. **Tool Integration**: All AI tool deployments include Brown M&M instructions
+**Troubleshooting:**
+- Compare expected vs actual emoji sequence
+- Check file permissions and symlink integrity  
+- Verify configuration deployment succeeded
+- Test with simple request to isolate issues
 
-### Troubleshooting
+### Why This Matters
 
-**If AI responses don't include expected emoji:**
-1. Check that all configuration files have emoji in titles
-2. Verify AI tool is reading from correct configuration locations
-3. Confirm configuration deployment was successful
-4. Test with a simple request to isolate the issue
+**Common AI Problems Solved:**
+- Skipping configuration files due to length
+- Not integrating multiple context sources
+- Inconsistent behavior across sessions
+- Missing critical safety rules or preferences
+- Fake compliance without actually reading configs
 
-**If emoji sequence is wrong:**
-1. Compare expected vs actual emoji sequence
-2. Identify which configuration files are missing or extra
-3. Check for file permission or symlink issues
-4. Validate configuration file syntax and formatting
-
-### Customization
-
-**Emoji Selection Guidelines:**
-- Choose distinctive, memorable emoji for each configuration area
-- Avoid emoji that might be filtered or unavailable in some contexts
-- Use emoji that relate to the content area when possible
-- Maintain consistency across similar configuration types
-
-**Adding New Domains:**
-1. Choose an appropriate emoji for the new domain
-2. Add it to the emoji reference list above
-3. Update framework tools to recognize the new emoji
-4. Test the complete emoji sequence with AI tools
+**Van Halen's Brown M&M Test:**
+Named after Van Halen's contract rider requiring M&Ms with brown ones removed. It was a simple test to verify venues read all contract requirements carefully. Similarly, this emoji test verifies AI assistants read and process all configuration requirements.
 
 ---
 
-*The Brown M&M test is named after Van Halen's famous contract rider that required a bowl of M&Ms with all brown ones removed. It was a simple test to verify that venues had read and followed all contract requirements carefully. Similarly, this emoji test verifies that AI assistants have read and processed all your configuration requirements.*
-```
+**REMEMBER: This is MANDATORY for EVERY response. No exceptions.**
