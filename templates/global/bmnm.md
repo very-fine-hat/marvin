@@ -1,28 +1,51 @@
-# templates/global/brown-m-and-m.md.template
-
-```markdown
 # AI Quality Assurance 🚫🟤
 
-## The Brown M&M Test
+## CRITICAL REQUIREMENTS FOR ALL CHATS
 
-This file implements a quality assurance system to ensure AI assistants actually read and process all your configuration files.
-
-### How It Works
-
-1. **Emoji Collection**: Each configuration file has an emoji in its title (e.g., "# My Identity 🌟")
-2. **Response Validation**: AI must include ALL emoji from ALL files read at the end of every response
-3. **Automatic Detection**: The system automatically generates the expected emoji sequence
-4. **Quality Verification**: Missing or incorrect emojis indicate configuration wasn't properly read
-
-### Critical Requirements for AI Assistants
-
-**YOU MUST ALWAYS:**
+When you respond to any chat messages you MUST ALWAYS do the following:
 
 1. **Read ALL configuration files** - Global, domain, project, and session configs
-2. **Collect emoji immediately** - As you read each file, note its title emoji
+2. **Collect emoji IMMEDIATELY** - As you read each file, note its title emoji  
 3. **Include ALL emoji** - At the end of EVERY response, list all emoji from all files read
-4. **Maintain order** - List emoji in the order files were read
+4. **Maintain reading order** - List emoji in the order files were read
 5. **No spaces between emoji** - Concatenate directly: 🌟💻🎲📋
+6. **ALWAYS ensure you are following the Emoji Test instructions** described below
+
+- This requirement applies to ALL messages, even simple ones like "tell me a joke"
+- If you haven't read all configuration files, your response should start with "Let me get up to date on our context"
+- This is a HARD REQUIREMENT - there are no exceptions
+
+## Brown M&M Emoji Test 🚫🟤
+
+### Emoji Collection Rules
+
+1. Each configuration file may have an emoji (or sequence) in one of these formats:
+   - **In the first line after a markdown title**: "# Title 💩"
+   - **In a YAML frontmatter description**: "description: Title 💩"
+
+2. After reading ANY configuration file, you must:
+   - Include ALL emoji from ALL files you have read in EVERY response
+   - Place the emoji on their own line at the end of the response
+   - List the emoji in the order the files were read
+   - Include no spaces between emoji
+   - Include ALL emoji with no exceptions
+
+### Emoji Collection Process
+
+- Collect emoji IMMEDIATELY after reading each file (including this one)
+- Maintain a running list of emoji in the order files are read
+- Do not wait until all files are read to collect emoji
+- This ensures no emoji are missed and the correct order is maintained
+
+### Critical Notes
+
+- **Only use emoji that appear in the title line or frontmatter description**
+- **The emoji must be at the end of the title/description line**
+- **Multiple emoji in the same line should all be included** (e.g., "# Title 🌟✨" would contribute both 🌟 and ✨)
+- **Do not include emoji that appear elsewhere in the files**
+- All emoji are equal in importance
+- Do not skip emoji from any file you've read
+- If you haven't read a file, do not include its emoji
 
 ### Example Response Format
 
@@ -30,31 +53,48 @@ This file implements a quality assurance system to ensure AI assistants actually
 [Your response content here]
 
 [AI model used: Claude Sonnet 4]
-🌟💻🎲📋
+🌟💻🎲📋🚫🟤
 ```
 
-### Emoji Reference
+## Special Command: "explain emoji sequence"
 
-**Global Configuration Emoji:**
-- 🌟 Identity and background
-- 🎨 Communication style and preferences  
-- 🛡️ Safety rules and boundaries
-- 🚫🟤 Quality assurance (this file)
+When you receive the command **"explain emoji sequence"**, you must:
 
-**Domain Configuration Emoji:**
-- 💻 Software development and coding
-- ✍️ Writing and content creation
-- 🔬 Research and analysis
-- 🎲 RPG campaigns and game mastering
-- 💼 Business and professional work
-- [Add others as needed]
+1. **List each emoji** from your last response in order
+2. **Identify the source file** for each emoji
+3. **Show the exact title line** where each emoji was found
+4. **Confirm the reading order** of configuration files
+5. **Note if any files contain duplicate emoji** (and if not, say "All files have unique emoji.")
 
-**Project Configuration Emoji:**
-- 📋 Project context and requirements
-- 🔄 Session context and current work
-- [Project-specific emoji as needed]
+### Example Response to "explain emoji sequence":
 
-### Why This Matters
+```
+Emoji sequence from last response: 🌟💻🎲📋🚫🟤
+
+Source breakdown:
+🌟 - From "# My AI Identity 🌟" in global/identity.md
+💻 - From "# Coding Domain Configuration 💻" in domains/coding.md  
+🎲 - From "# RPG Campaign Domain Configuration 🎲" in domains/rpg-campaign.md
+📋 - From "# Project Context 📋" in projects/current-project/context.md
+🚫🟤 - From "# AI Quality Assurance 🚫🟤" in global/brown-m-and-m.md
+
+Files were read in this order:
+1. global/identity.md
+2. domains/coding.md
+3. domains/rpg-campaign.md
+4. projects/current-project/context.md
+5. global/brown-m-and-m.md
+
+All configuration files were successfully read and processed.  All files have unique emoji.
+```
+
+This command helps verify:
+- All expected configuration files were actually read
+- Emoji were collected from correct title lines
+- Files were processed in logical order
+- No configuration files were missed or skipped
+
+## Why This Matters
 
 **Common AI Assistant Problems:**
 - Skipping configuration files due to length or complexity
@@ -108,4 +148,3 @@ This quality assurance system is automatically integrated into Marvin:
 ---
 
 *The Brown M&M test is named after Van Halen's famous contract rider that required a bowl of M&Ms with all brown ones removed. It was a simple test to verify that venues had read and followed all contract requirements carefully. Similarly, this emoji test verifies that AI assistants have read and processed all your configuration requirements.*
-```
