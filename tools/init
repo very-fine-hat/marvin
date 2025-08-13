@@ -1,0 +1,185 @@
+#!/bin/bash
+# Initialize Marvin personal configuration directory
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
+
+# Marvin directories
+MARVIN_HOME="$HOME/.marvin"
+FRAMEWORK_DIR="$MARVIN_HOME/framework"
+CONFIGS_DIR="$MARVIN_HOME/configs"
+FRAMEWORK_CONFIGS_DIR="$FRAMEWORK_DIR/configs"
+
+# Parse arguments
+DOMAIN="${1:-coding}"
+
+if [[ "$DOMAIN" == "help" || "$DOMAIN" == "-h" || "$DOMAIN" == "--help" ]]; then
+    cat << 'EOF'
+🤖 Marvin Init - Initialize Personal Configuration Directory
+
+USAGE:
+    marvin init [domain]
+
+DOMAINS:
+    coding        - Software development (default)
+    rpg-campaign  - RPG/Gaming domain
+    all           - Initialize all available domains
+
+EXAMPLES:
+    marvin init                  # Initialize with coding domain
+    marvin init rpg-campaign     # Initialize with RPG domain
+    marvin init all              # Initialize all domains
+
+This command creates ~/.marvin/configs/ with your personal AI configurations
+copied from the framework templates. You should then customize these files
+and check them into a git repository.
+EOF
+    exit 0
+fi
+
+echo_color $BLUE "🚀 Marvin: Initializing personal configuration directory"
+
+# Check if framework exists
+if [[ ! -d "$FRAMEWORK_CONFIGS_DIR" ]]; then
+    echo_color $RED "❌ Framework configs not found at: $FRAMEWORK_CONFIGS_DIR"
+    echo "   Make sure Marvin framework is properly installed."
+    exit 1
+fi
+
+# Check if configs already exist
+if [[ -d "$CONFIGS_DIR" ]]; then
+    echo_color $YELLOW "⚠️  Configuration directory already exists: $CONFIGS_DIR"
+    read -p "Continue and overwrite existing files? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo_color $BLUE "Initialization cancelled."
+        exit 0
+    fi
+fi
+
+# Create configs directory structure
+echo_color $BLUE "📁 Creating configuration directory structure..."
+mkdir -p "$CONFIGS_DIR"
+mkdir -p "$CONFIGS_DIR/global"
+mkdir -p "$CONFIGS_DIR/global/always"
+mkdir -p "$CONFIGS_DIR/domains"
+
+# Copy global configs (always + templates)
+echo_color $BLUE "📋 Copying global configurations..."
+if [[ -d "$FRAMEWORK_CONFIGS_DIR/global/always" ]]; then
+    cp -r "$FRAMEWORK_CONFIGS_DIR/global/always"/* "$CONFIGS_DIR/global/always/" 2>/dev/null || true
+fi
+cp "$FRAMEWORK_CONFIGS_DIR/global"/template-*.md "$CONFIGS_DIR/global/" 2>/dev/null || true
+
+# Copy domain configs based on selection
+copy_domain() {
+    local domain_name="$1"
+    if [[ -d "$FRAMEWORK_CONFIGS_DIR/domains/$domain_name" ]]; then
+        echo_color $BLUE "  📦 Copying $domain_name domain..."
+        mkdir -p "$CONFIGS_DIR/domains/$domain_name"
+        cp -r "$FRAMEWORK_CONFIGS_DIR/domains/$domain_name"/* "$CONFIGS_DIR/domains/$domain_name/" 2>/dev/null || true
+    else
+        echo_color $YELLOW "  ⚠️  Domain not found: $domain_name"
+    fi
+}
+
+if [[ "$DOMAIN" == "all" ]]; then
+    echo_color $BLUE "📦 Copying all available domains..."
+    for domain_dir in "$FRAMEWORK_CONFIGS_DIR/domains"/*; do
+        if [[ -d "$domain_dir" ]]; then
+            domain_name=$(basename "$domain_dir")
+            copy_domain "$domain_name"
+        fi
+    done
+else
+    echo_color $BLUE "📦 Copying $DOMAIN domain..."
+    copy_domain "$DOMAIN"
+fi
+
+# Create README for configs directory
+cat > "$CONFIGS_DIR/README.md" << 'EOF'
+# Marvin Personal Configurations
+
+This directory contains your personal AI configurations that will be deployed to projects.
+
+## Directory Structure
+
+- `global/always/` - Critical configurations that are always read first
+- `global/` - Your personal identity and universal preferences  
+- `domains/` - Domain-specific configurations (coding, writing, etc.)
+
+## Getting Started
+
+1. **Customize templates** - Edit files starting with `template-` to match your preferences
+2. **Version control** - Initialize git and check these files into a repository
+3. **Link to projects** - Use `marvin link <domain>` in project directories
+
+## Framework Files (global/always/)
+
+These files come from the Marvin framework and provide essential functionality:
+
+- `brown-mnm.md` - Quality assurance system (Brown M&M test)
+- `safety.md` - AI safety rules and boundaries  
+- `style.md` - Interaction style preferences
+
+You can modify or remove these files if you don't want them, but the Brown M&M 
+test is recommended for ensuring AI assistants actually read your configurations.
+
+## Templates
+
+Files starting with `template-` are meant to be customized:
+
+- Copy `template-identity.md` to `identity.md` and customize
+- Edit domain templates to match your workflow preferences
+- Remove template files once you've created your personalized versions
+
+## Usage
+
+After customizing your configurations:
+
+```bash
+cd /path/to/your/project
+marvin link coding              # Copy configs to project's ai-marvin/ directory
+marvin setup cursor            # Configure Cursor IDE to use configs
+marvin sync                    # Sync changes between central configs and project
+```
+
+For more information, see the Marvin documentation.
+EOF
+
+# Initialize git repository
+cd "$CONFIGS_DIR"
+if [[ ! -d .git ]]; then
+    echo_color $BLUE "📝 Initializing git repository..."
+    git init
+    git add .
+    git commit -m "Initial Marvin configuration setup
+
+- Added framework defaults (brown-mnm, safety, style)
+- Added templates for customization
+- Initialized $DOMAIN domain configurations"
+else
+    echo_color $BLUE "📝 Git repository already exists, staging new files..."
+    git add .
+fi
+
+echo_color $GREEN "✅ Marvin configuration directory initialized!"
+echo
+echo_color $BLUE "Next steps:"
+echo "1. Customize template files in: $CONFIGS_DIR"
+echo "2. Remove 'template-' prefix when ready: mv template-identity.md identity.md"
+echo "3. Check your configs into a git repository"
+echo "4. Use 'marvin link <domain>' in project directories"
+echo
+echo_color $YELLOW "💡 Pro tip: Start by customizing global/template-identity.md with your information"

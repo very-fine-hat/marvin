@@ -1,0 +1,198 @@
+#!/bin/bash
+# Deploy project configurations to AI tools
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
+
+# Marvin directories
+MARVIN_HOME="$HOME/.marvin"
+FRAMEWORK_DIR="$MARVIN_HOME/framework"
+CONFIGS_DIR="$MARVIN_HOME/configs"
+FRAMEWORK_DEFAULTS_DIR="$FRAMEWORK_DIR/framework-defaults"
+
+# Parse arguments
+PROJECT_NAME="$1"
+TARGET="${2:-cursor}"
+
+if [[ -z "$PROJECT_NAME" ]]; then
+    echo_color $RED "❌ Usage: marvin sync <project> <tool>"
+    echo "   Example: marvin sync myproject cursor"
+    exit 1
+fi
+
+PROJECT_DIR="$CONFIGS_DIR/projects/$PROJECT_NAME"
+
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo_color $RED "❌ Project not found: $PROJECT_NAME"
+    echo "   Expected: $PROJECT_DIR"
+    echo "   Use 'marvin link' or 'marvin create' to set up project first"
+    exit 1
+fi
+
+echo_color $BLUE "🔄 Marvin: Syncing project '$PROJECT_NAME' to '$TARGET'"
+
+# Function to combine configurations
+combine_configs() {
+    local output_file="$1"
+    local temp_file=$(mktemp)
+    
+    echo_color $BLUE "📋 Combining configuration layers..."
+    
+    # Add framework defaults first (these are always included)
+    if [[ -d "$FRAMEWORK_DEFAULTS_DIR/global" ]]; then
+        echo_color $BLUE "  📎 Including framework defaults..."
+        for file in "$FRAMEWORK_DEFAULTS_DIR/global"/*.md; do
+            if [[ -f "$file" ]]; then
+                echo "" >> "$temp_file"
+                echo "<!-- Framework Default: $(basename "$file") -->" >> "$temp_file"
+                cat "$file" >> "$temp_file"
+                echo "" >> "$temp_file"
+            fi
+        done
+    fi
+    
+    # Add global configs
+    if [[ -d "$CONFIGS_DIR/global" ]]; then
+        echo_color $BLUE "  🌐 Including global configs..."
+        for file in "$CONFIGS_DIR/global"/*.md; do
+            if [[ -f "$file" ]]; then
+                echo "" >> "$temp_file"
+                echo "<!-- Global Config: $(basename "$file") -->" >> "$temp_file"
+                cat "$file" >> "$temp_file"
+                echo "" >> "$temp_file"
+            fi
+        done
+    fi
+    
+    # Add domain configs (look for domain hint in project context)
+    if [[ -f "$PROJECT_DIR/context.md" ]]; then
+        # Try to extract domain from project context
+        DOMAIN=$(grep -i "domain:" "$PROJECT_DIR/context.md" | head -1 | sed 's/.*domain:\s*\[\?\([^]]*\)\]?.*/\1/' || echo "")
+        if [[ -n "$DOMAIN" && -f "$CONFIGS_DIR/domains/${DOMAIN}.md" ]]; then
+            echo_color $BLUE "  🎯 Including domain config: $DOMAIN"
+            echo "" >> "$temp_file"
+            echo "<!-- Domain Config: $DOMAIN -->" >> "$temp_file"
+            cat "$CONFIGS_DIR/domains/${DOMAIN}.md" >> "$temp_file"
+            echo "" >> "$temp_file"
+        fi
+    fi
+    
+    # Add project configs
+    echo_color $BLUE "  📁 Including project configs..."
+    for file in "$PROJECT_DIR"/*.md; do
+        if [[ -f "$file" ]]; then
+            echo "" >> "$temp_file"
+            echo "<!-- Project Config: $(basename "$file") -->" >> "$temp_file"
+            cat "$file" >> "$temp_file"
+            echo "" >> "$temp_file"
+        fi
+    done
+    
+    # Add session configs if they exist
+    if [[ -d "$CONFIGS_DIR/sessions/$PROJECT_NAME" ]]; then
+        echo_color $BLUE "  ⏰ Including session configs..."
+        for file in "$CONFIGS_DIR/sessions/$PROJECT_NAME"/*.md; do
+            if [[ -f "$file" ]]; then
+                echo "" >> "$temp_file"
+                echo "<!-- Session Config: $(basename "$file") -->" >> "$temp_file"
+                cat "$file" >> "$temp_file"
+                echo "" >> "$temp_file"
+            fi
+        done
+    fi
+    
+    # Move to final location
+    mv "$temp_file" "$output_file"
+    echo_color $GREEN "✅ Combined configuration saved to: $output_file"
+}
+
+# Deploy based on target tool
+case "$TARGET" in
+    "cursor")
+        echo_color $BLUE "🎯 Deploying to Cursor IDE..."
+        
+        # Find project path
+        if [[ -f "$PROJECT_DIR/.project_path" ]]; then
+            PROJECT_PATH=$(cat "$PROJECT_DIR/.project_path")
+        else
+            echo_color $YELLOW "⚠️  No project path found. Looking for common project indicators..."
+            # Try to find project directory
+            PROJECT_PATH=$(find "$HOME" -name "$PROJECT_NAME" -type d 2>/dev/null | head -1)
+        fi
+        
+        if [[ -z "$PROJECT_PATH" || ! -d "$PROJECT_PATH" ]]; then
+            echo_color $RED "❌ Cannot find project directory for: $PROJECT_NAME"
+            echo "   Try specifying path when linking: marvin link $PROJECT_NAME /path/to/project"
+            exit 1
+        fi
+        
+        # Create .cursor/rules directory
+        CURSOR_DIR="$PROJECT_PATH/.cursor"
+        RULES_DIR="$CURSOR_DIR/rules"
+        mkdir -p "$RULES_DIR"
+        
+        # Combine and deploy configuration
+        COMBINED_CONFIG="$RULES_DIR/marvin-combined.md"
+        combine_configs "$COMBINED_CONFIG"
+        
+        echo_color $GREEN "✅ Deployed to Cursor: $COMBINED_CONFIG"
+        ;;
+        
+    "claude")
+        echo_color $BLUE "🧠 Deploying to Claude Projects..."
+        
+        # Create combined config in a standard location
+        CLAUDE_DIR="$HOME/.marvin/deployments/claude"
+        mkdir -p "$CLAUDE_DIR"
+        COMBINED_CONFIG="$CLAUDE_DIR/${PROJECT_NAME}-context.md"
+        combine_configs "$COMBINED_CONFIG"
+        
+        echo_color $GREEN "✅ Combined context ready for Claude Projects: $COMBINED_CONFIG"
+        echo_color $YELLOW "📝 Manual step: Upload this file to your Claude Project"
+        ;;
+        
+    "code")
+        echo_color $BLUE "💻 Deploying to Claude Code..."
+        
+        # Find project path
+        if [[ -f "$PROJECT_DIR/.project_path" ]]; then
+            PROJECT_PATH=$(cat "$PROJECT_DIR/.project_path")
+        else
+            PROJECT_PATH=$(find "$HOME" -name "$PROJECT_NAME" -type d 2>/dev/null | head -1)
+        fi
+        
+        if [[ -z "$PROJECT_PATH" || ! -d "$PROJECT_PATH" ]]; then
+            echo_color $RED "❌ Cannot find project directory for: $PROJECT_NAME"
+            exit 1
+        fi
+        
+        # Create .claude-code directory
+        CLAUDE_CODE_DIR="$PROJECT_PATH/.claude-code"
+        mkdir -p "$CLAUDE_CODE_DIR"
+        
+        # Combine and deploy configuration
+        COMBINED_CONFIG="$CLAUDE_CODE_DIR/instructions.md"
+        combine_configs "$COMBINED_CONFIG"
+        
+        echo_color $GREEN "✅ Deployed to Claude Code: $COMBINED_CONFIG"
+        ;;
+        
+    *)
+        echo_color $RED "❌ Unknown target: $TARGET"
+        echo "   Supported targets: cursor, claude, code"
+        exit 1
+        ;;
+esac
+
+echo_color $GREEN "🎉 Sync complete for project '$PROJECT_NAME' to '$TARGET'"

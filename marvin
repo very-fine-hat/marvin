@@ -44,11 +44,12 @@ USAGE:
     marvin <command> [options]
 
 COMMANDS:
-    init                    Initialize Marvin configuration system
+    init [domain]           Initialize personal configuration directory  
     edit <path>             Edit configuration file
-    link <project> [path]   Link existing project to Marvin
+    link <domain>           Link configurations to current project
+    setup <tool>            Configure specific AI tool
+    sync                    Sync configurations between central and project
     create <project> <type> Create new project from template
-    sync <project> <tool>   Deploy configurations to AI tool
     validate                Check configuration consistency
     status                  Show configuration status
     update                  Update Marvin framework from GitHub
@@ -56,11 +57,12 @@ COMMANDS:
     help                    Show this help message
 
 EXAMPLES:
-    marvin init                          # First-time setup
-    marvin edit global/identity.md       # Edit your identity
-    marvin link myapp /path/to/myapp     # Link existing project
-    marvin create webapp coding         # New project from template
-    marvin sync myapp cursor            # Deploy to Cursor IDE
+    marvin init                          # Initialize with coding domain
+    marvin init rpg-campaign             # Initialize with RPG domain  
+    marvin link coding                   # Link coding configs to current project
+    marvin setup cursor                  # Configure Cursor IDE
+    marvin sync                          # Sync changes between configs and project
+    marvin edit global/identity.md       # Edit your identity (after init)
     marvin validate                      # Check all configs
     marvin update                        # Update framework
     marvin version                       # Show version
@@ -86,8 +88,15 @@ EOF
 
 check_setup() {
     if [[ ! -d "$CONFIGS_DIR" ]]; then
-        echo_color $RED "❌ Marvin not set up. Run the setup script first:"
-        echo "   ~/.marvin/framework/setup"
+        echo_color $RED "❌ Marvin not set up. Run 'marvin init' first to create personal configurations."
+        exit 1
+    fi
+}
+
+check_setup_framework() {
+    if [[ ! -d "$FRAMEWORK_DIR" ]]; then
+        echo_color $RED "❌ Marvin framework not found at $FRAMEWORK_DIR"
+        echo "   Make sure Marvin framework is properly installed."
         exit 1
     fi
 }
@@ -197,13 +206,13 @@ case "$COMMAND" in
         ;;
     
     "init")
-        echo_color $BLUE "🚀 Initializing Marvin..."
-        if [[ ! -f "$FRAMEWORK_DIR/setup" ]]; then
-            echo_color $RED "❌ Setup script not found at $FRAMEWORK_DIR/setup"
-            echo "   Make sure Marvin framework is properly installed."
+        check_setup_framework
+        if [[ ! -f "$TOOLS_DIR/init" ]]; then
+            echo_color $RED "❌ init tool not found"
+            echo "   Make sure Marvin framework is complete."
             exit 1
         fi
-        exec "$FRAMEWORK_DIR/setup"
+        exec "$TOOLS_DIR/init" "$@"
         ;;
     
     "edit")
@@ -233,13 +242,13 @@ case "$COMMAND" in
         ;;
     
     "link")
-        check_setup
-        if [[ ! -f "$TOOLS_DIR/link-project" ]]; then
-            echo_color $RED "❌ link-project tool not found"
+        check_setup_framework
+        if [[ ! -f "$TOOLS_DIR/link" ]]; then
+            echo_color $RED "❌ link tool not found"
             echo "   Make sure Marvin framework is complete."
             exit 1
         fi
-        exec "$TOOLS_DIR/link-project" "$@"
+        exec "$TOOLS_DIR/link" "$@"
         ;;
     
     "create")

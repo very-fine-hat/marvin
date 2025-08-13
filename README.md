@@ -1,4 +1,4 @@
-# Marvin
+# Marvin 🤖
 
 > "I think you ought to know I'm feeling very depressed." - Marvin, The Paranoid Android
 
@@ -26,29 +26,45 @@ Marvin attempts to make you feel better about this by providing a **layered conf
 ```bash
 # Clone Marvin framework
 git clone https://github.com/very-fine-hat/marvin.git ~/.marvin/framework
-
-# Run setup
-~/.marvin/framework/setup
-
-# Initialize your first configuration
-marvin init
 ```
 
-### First Configuration
+### First Time Setup
 
 ```bash
-# Create your identity
-marvin edit global/identity.md
+# Initialize your personal configurations
+marvin init                      # Creates ~/.marvin/configs/ with coding domain
+marvin init rpg-campaign         # Or initialize with different domain
+marvin init all                  # Or initialize all available domains
 
-# Set up a domain (e.g., coding)
-marvin edit domains/coding.md
+# Customize your configurations
+cd ~/.marvin/configs
+cp template-identity.md identity.md
+edit identity.md                 # Add your personal details
 
-# Link your first project
-marvin link my-project /path/to/project
+# Version control your configs
+git add .
+git commit -m "Initial personal AI configurations"
+```
 
-# Deploy to your AI tools
-marvin sync my-project cursor
-marvin sync my-project claude
+### Using in Projects
+
+```bash
+# In any project directory
+cd /path/to/your/project
+
+# Link your configurations to the project
+marvin link coding               # Creates ai-marvin/ directory
+
+# Configure AI tools
+marvin setup cursor              # Set up Cursor IDE integration
+marvin setup claude              # Prepare for Claude Projects
+
+# Customize project-specific context
+edit ai-marvin/project/context.md
+
+# Commit to project repository
+git add ai-marvin/
+git commit -m "Add Marvin AI configurations"
 ```
 
 ## Core Concepts
@@ -84,52 +100,110 @@ After setup, you'll have:
 
 ```
 ~/.marvin/
-├── framework/           # Marvin framework (this repo)
-└── configs/            # Your personal AI configurations
-    ├── global/         # Universal configurations
-    ├── domains/        # Domain-specific configurations  
-    ├── projects/       # Project-specific configurations
-    └── sessions/       # Auto-managed session context
+├── framework/                    # Marvin framework (this repo)
+│   ├── configs/                 # Framework template configurations
+│   │   ├── global/
+│   │   │   ├── always/          # Always-read-first configurations
+│   │   │   │   ├── brown-mnm.md # Quality assurance system
+│   │   │   │   ├── safety.md    # AI safety rules
+│   │   │   │   └── style.md     # Interaction style guide
+│   │   │   └── template-*.md    # Templates for customization
+│   │   └── domains/             # Domain-specific templates
+│   │       ├── coding/
+│   │       ├── writing/
+│   │       ├── research/
+│   │       └── rpg-campaign/
+│   └── tools/                   # Management and deployment tools
+├── configs/                     # Your personal AI configurations (git repo)
+│   ├── global/
+│   │   ├── always/              # Framework defaults (copied during init)
+│   │   └── identity.md          # Your customized identity
+│   └── domains/
+│       └── coding/              # Your customized domain configs
+└── project/
+    └── ai-marvin/               # Project-specific AI configurations
+        ├── global/              # Copied from your personal configs
+        ├── coding/              # Domain configs for this project
+        └── project/             # Project-specific context
 ```
+
+### Configuration Layers
+
+The new workflow uses a **copy-based approach** with three main locations:
+
+1. **Framework configs** (`~/.marvin/framework/configs/`) - Templates and defaults
+2. **Personal configs** (`~/.marvin/configs/`) - Your customized configurations (git repository)
+3. **Project configs** (`project/ai-marvin/`) - Project-specific copy of configs
+
+### Always-Read-First Files
+
+Files in `always/` directories are read before other files in the same layer:
+
+- **Brown M&M Test** (`brown-mnm.md`) - Quality assurance system that ensures AI assistants actually read your configurations
+- **Safety Rules** (`safety.md`) - Essential AI safety boundaries and guidelines
+- **Style Guide** (`style.md`) - Consistent interaction patterns and preferences
+
+This ensures critical configurations are always processed first, regardless of filesystem ordering.
 
 ## Example Use Cases
 
 ### Software Developer
-- Global identity with programming background and preferences
-- Coding domain with language-specific guidelines and architecture patterns
-- Project-specific technical context and requirements
-- Automatic deployment to Cursor, Claude Code, and Claude Projects
+- Initialize with `marvin init coding`
+- Customize global identity and coding domain preferences
+- Use `marvin link coding` in each project to create ai-marvin/ directory
+- Set up tools with `marvin setup cursor` and `marvin setup claude`
+- Project teams can see and collaborate on AI configurations
 
 ### Content Creator
-- Global identity with writing experience and style preferences
-- Writing domain with genre-specific guidelines and voice preferences
-- Project-specific context for different publications or clients
-- Consistent AI assistance across writing tools and platforms
+- Initialize with `marvin init writing`
+- Set up writing domain with style guides and preferences
+- Link writing configs to content projects
+- Consistent AI assistance across different publications and clients
 
 ### Researcher
-- Global identity with research background and methodology preferences
-- Research domain with analysis frameworks and citation standards
+- Initialize with `marvin init research`
+- Configure research methodology and analysis frameworks
 - Project-specific research questions and source organization
-- Consistent AI assistance for literature review, analysis, and writing
+- Maintain consistent research approach across different studies
 
 ### TTRPG Game Master
-- Global identity with gamemastering background and system preferences
-- RPG domain with system-specific guidelines
-- Project-specific context for campaigns, players, etc.
-- Deployment into a location for content and notes (e.g., an Obsidian Vault)
+- Initialize with `marvin init rpg-campaign`
+- Set up RPG domain with system-specific guidelines
+- Link to campaign directories with campaign-specific context
+- Use `marvin setup` to integrate with note-taking tools like Obsidian
 
 ## Commands
 
 ```bash
-marvin init                           # Initialize personal configuration
-marvin edit <path>                    # Edit configuration file
-marvin link <project> [path]          # Link existing project
-marvin create <project> <template>    # Create new project from template
-marvin sync <project> <tool>          # Deploy configurations to AI tool
+marvin init [domain]                  # Initialize personal configuration directory
+marvin edit <path>                    # Edit configuration file in ~/.marvin/configs/
+marvin link <domain>                  # Link configurations to current project  
+marvin setup <tool>                   # Configure specific AI tool (cursor, claude, code)
+marvin sync                           # Sync changes between personal and project configs
 marvin validate                       # Check configuration consistency
 marvin status                         # Show configuration status
+marvin update                         # Update Marvin framework from GitHub
+marvin version                        # Show version information
 marvin help                          # Show detailed help
 ```
+
+## Workflow
+
+The typical Marvin workflow:
+
+1. **One-time setup**: `marvin init` to create personal configurations
+2. **Customize**: Edit template files in `~/.marvin/configs/`
+3. **Per-project**: Use `marvin link <domain>` to copy configs to projects
+4. **Tool setup**: Use `marvin setup <tool>` to configure AI tools
+5. **Iterate**: Use `marvin sync` to keep configs in sync
+
+### Sync Workflow
+
+Marvin supports bidirectional syncing:
+
+- **Personal → Project**: `marvin sync` copies updates from `~/.marvin/configs/` to current project
+- **Project → Personal**: `marvin sync` can promote useful project changes back to personal configs
+- **Conflict resolution**: When both sides have changes, Marvin asks which direction to sync
 
 ## Philosophy
 

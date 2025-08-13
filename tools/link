@@ -1,0 +1,246 @@
+#!/bin/bash
+# Link Marvin configurations to current project
+set -euo pipefail
+
+# Colors  
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
+
+# Marvin directories
+MARVIN_HOME="$HOME/.marvin"
+CONFIGS_DIR="$MARVIN_HOME/configs"
+PROJECT_AI_DIR="./ai-marvin"
+
+# Parse arguments
+DOMAIN="${1:-coding}"
+
+if [[ "$DOMAIN" == "help" || "$DOMAIN" == "-h" || "$DOMAIN" == "--help" ]]; then
+    cat << 'EOF'
+🤖 Marvin Link - Link configurations to current project
+
+USAGE:
+    marvin link [domain]
+
+DOMAINS:
+    coding        - Software development (default)
+    rpg-campaign  - RPG/Gaming domain  
+    writing       - Content creation
+    research      - Research and analysis
+
+EXAMPLES:
+    marvin link                  # Link coding domain to current project
+    marvin link rpg-campaign     # Link RPG domain to current project
+
+This command creates an ai-marvin/ directory in the current project with:
+- Global configurations (including always/ files)
+- Domain-specific configurations  
+- Empty project/ directory for project-specific configs
+
+After linking, use 'marvin setup <tool>' to configure specific AI tools.
+EOF
+    exit 0
+fi
+
+echo_color $BLUE "🔗 Marvin: Linking $DOMAIN domain to current project"
+
+# Check if personal configs exist
+if [[ ! -d "$CONFIGS_DIR" ]]; then
+    echo_color $RED "❌ Personal configurations not found at: $CONFIGS_DIR"
+    echo "   Run 'marvin init' first to set up your personal configurations."
+    exit 1
+fi
+
+# Check if domain exists
+if [[ ! -d "$CONFIGS_DIR/domains/$DOMAIN" ]]; then
+    echo_color $RED "❌ Domain not found: $DOMAIN"
+    echo "   Available domains:"
+    if [[ -d "$CONFIGS_DIR/domains" ]]; then
+        find "$CONFIGS_DIR/domains" -maxdepth 1 -type d -exec basename {} \; | grep -v "^domains$" | sed 's/^/     /'
+    fi
+    echo "   Run 'marvin init $DOMAIN' to initialize this domain."
+    exit 1
+fi
+
+# Check if ai-marvin already exists
+if [[ -d "$PROJECT_AI_DIR" ]]; then
+    echo_color $YELLOW "⚠️  ai-marvin/ directory already exists in current project"
+    read -p "Continue and overwrite existing files? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo_color $BLUE "Link cancelled."
+        exit 0
+    fi
+fi
+
+# Create project ai-marvin directory structure
+echo_color $BLUE "📁 Creating ai-marvin/ directory structure..."
+mkdir -p "$PROJECT_AI_DIR/global"
+mkdir -p "$PROJECT_AI_DIR/global/always"
+mkdir -p "$PROJECT_AI_DIR/$DOMAIN"
+mkdir -p "$PROJECT_AI_DIR/project"
+
+# Copy global configurations
+echo_color $BLUE "📋 Copying global configurations..."
+if [[ -d "$CONFIGS_DIR/global/always" ]]; then
+    cp "$CONFIGS_DIR/global/always"/*.md "$PROJECT_AI_DIR/global/always/" 2>/dev/null || true
+fi
+
+# Copy non-template global files
+for file in "$CONFIGS_DIR/global"/*.md; do
+    if [[ -f "$file" ]]; then
+        filename=$(basename "$file")
+        # Skip template files - user should have renamed them
+        if [[ ! "$filename" =~ ^template- ]]; then
+            cp "$file" "$PROJECT_AI_DIR/global/"
+        fi
+    fi
+done
+
+# Copy domain configurations  
+echo_color $BLUE "📦 Copying $DOMAIN domain configurations..."
+if [[ -d "$CONFIGS_DIR/domains/$DOMAIN/always" ]]; then
+    mkdir -p "$PROJECT_AI_DIR/$DOMAIN/always"
+    cp "$CONFIGS_DIR/domains/$DOMAIN/always"/*.md "$PROJECT_AI_DIR/$DOMAIN/always/" 2>/dev/null || true
+fi
+
+# Copy non-template domain files
+for file in "$CONFIGS_DIR/domains/$DOMAIN"/*.md; do
+    if [[ -f "$file" ]]; then
+        filename=$(basename "$file")
+        # Skip template files
+        if [[ ! "$filename" =~ ^template- ]]; then
+            cp "$file" "$PROJECT_AI_DIR/$DOMAIN/"
+        fi
+    fi
+done
+
+# Create project context template
+cat > "$PROJECT_AI_DIR/project/context.md" << 'EOF'
+# Project Context 📋
+
+## Project Overview
+
+### Basic Information
+- **Project name**: [Your project name]
+- **Project type**: [Web app/mobile app/library/tool/etc.]
+- **Domain**: [Coding/writing/research/business/etc.]
+- **Start date**: [When project began]
+- **Current status**: [Planning/development/testing/production/maintenance]
+
+### Project Description
+[2-3 paragraph description of what this project is about, its goals, and its intended audience or users]
+
+### Key Objectives
+1. **Primary objective**: [Main goal of the project]
+2. **Secondary objectives**: [Supporting goals and features]
+3. **Success metrics**: [How you'll measure success]
+4. **Timeline**: [Key milestones and deadlines]
+
+## Technical Context
+
+### Technology Stack
+- **Language(s)**: [Primary programming languages]
+- **Framework(s)**: [Main frameworks or libraries]
+- **Database**: [Database technology if applicable]
+- **Deployment**: [Hosting/deployment platform]
+- **Other tools**: [Relevant development tools]
+
+### Architecture Overview
+[Brief description of the system architecture, major components, and how they interact]
+
+## Current Status and Context
+
+### Recent Work
+[What has been accomplished recently - last few weeks]
+
+### Current Focus
+[What you're working on right now]
+
+### Immediate Next Steps
+1. [Next task or milestone]
+2. [Following task or priority]
+3. [Upcoming decisions or blockers]
+
+### Known Issues
+- **Technical debt**: [Areas that need refactoring]
+- **Bugs**: [Known issues that need addressing]
+- **Blockers**: [Current obstacles or dependencies]
+
+## Notes
+[Any additional context specific to this project]
+
+---
+
+*Update this file regularly as the project evolves.*
+EOF
+
+# Create README for ai-marvin directory
+cat > "$PROJECT_AI_DIR/README.md" << 'EOF'
+# AI Marvin Configuration
+
+This directory contains AI assistant configurations for this project.
+
+## Structure
+
+- `global/always/` - Critical configurations read first (Brown M&M test, safety, style)
+- `global/` - Your personal identity and universal preferences
+- `[domain]/` - Domain-specific configurations (coding, writing, etc.)  
+- `project/` - Project-specific context and requirements
+
+## Reading Order
+
+AI assistants should read files in this order:
+1. `global/always/` files first (especially brown-mnm.md)
+2. Remaining `global/` files
+3. `[domain]/always/` files (if any)
+4. Remaining `[domain]/` files  
+5. `project/always/` files (if any)
+6. Remaining `project/` files
+
+## Updating Configurations
+
+- **Global/Domain changes**: Edit in `~/.marvin/configs/` then run `marvin sync`
+- **Project changes**: Edit files in `project/` directly
+- **Sync conflicts**: Use `marvin sync` to resolve differences
+
+## Tool Setup
+
+After linking, configure your AI tools:
+
+```bash
+marvin setup cursor            # Configure Cursor IDE
+marvin setup claude           # Prepare for Claude Projects  
+marvin setup code             # Configure Claude Code
+```
+
+## Quality Assurance
+
+The `brown-mnm.md` file contains the Brown M&M test - a quality assurance system
+that ensures AI assistants actually read all configuration files. AI responses
+should include emoji from all files read.
+EOF
+
+echo_color $GREEN "✅ Successfully linked $DOMAIN domain to ai-marvin/"
+echo
+echo_color $BLUE "Project structure created:"
+echo "  ai-marvin/"
+echo "  ├── global/always/     (framework defaults: brown-mnm, safety, style)"
+echo "  ├── global/            (your personal configurations)"  
+echo "  ├── $DOMAIN/            (domain-specific configurations)"
+echo "  └── project/           (project context - customize context.md)"
+echo
+echo_color $BLUE "Next steps:"
+echo "1. Customize ai-marvin/project/context.md with project details"
+echo "2. Run 'marvin setup <tool>' to configure AI tools"
+echo "3. Commit ai-marvin/ directory to your project's git repository"
+echo
+echo_color $YELLOW "💡 Pro tip: The brown-mnm.md file enables quality assurance - AI responses should include emoji from all files read"
