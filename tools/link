@@ -28,7 +28,7 @@ if [[ "$DOMAIN" == "help" || "$DOMAIN" == "-h" || "$DOMAIN" == "--help" ]]; then
 🤖 Marvin Link - Link configurations to current project
 
 USAGE:
-    marvin link [domain]
+    marvin [domain]
 
 DOMAINS:
     coding        - Software development (default)
@@ -37,15 +37,15 @@ DOMAINS:
     research      - Research and analysis
 
 EXAMPLES:
-    marvin link                  # Link coding domain to current project
-    marvin link rpg-campaign     # Link RPG domain to current project
+    marvin                       # Link coding domain to current project
+    marvin rpg-campaign          # Link RPG domain to current project
 
 This command creates an ai-marvin/ directory in the current project with:
 - Global configurations (including always/ files)
 - Domain-specific configurations  
 - Empty project/ directory for project-specific configs
 
-After linking, use 'marvin setup <tool>' to configure specific AI tools.
+After linking, use 'marvin --setup <tool>' to configure specific AI tools.
 EOF
     exit 0
 fi
@@ -208,18 +208,18 @@ AI assistants should read files in this order:
 
 ## Updating Configurations
 
-- **Global/Domain changes**: Edit in `~/.marvin/configs/` then run `marvin sync`
+- **Global/Domain changes**: Edit in `~/.marvin/configs/` then run `marvin --sync`
 - **Project changes**: Edit files in `project/` directly
-- **Sync conflicts**: Use `marvin sync` to resolve differences
+- **Sync conflicts**: Use `marvin --sync` to resolve differences
 
 ## Tool Setup
 
 After linking, configure your AI tools:
 
 ```bash
-marvin setup cursor            # Configure Cursor IDE
-marvin setup claude           # Prepare for Claude Projects  
-marvin setup code             # Configure Claude Code
+marvin --setup cursor          # Configure Cursor IDE
+marvin --setup claude          # Prepare for Claude Projects  
+marvin --setup code            # Configure Claude Code
 ```
 
 ## Quality Assurance
@@ -240,7 +240,7 @@ echo "  └── project/           (project context - customize context.md)"
 echo
 echo_color $BLUE "Next steps:"
 echo "1. Customize ai-marvin/project/context.md with project details"
-echo "2. Run 'marvin setup <tool>' to configure AI tools"
+echo "2. Run 'marvin --setup <tool>' to configure AI tools"
 echo "3. Commit ai-marvin/ directory to your project's git repository"
 echo
 echo_color $YELLOW "💡 Pro tip: The brown-mnm.md file enables quality assurance - AI responses should include emoji from all files read"

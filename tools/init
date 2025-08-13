@@ -29,7 +29,7 @@ if [[ "$DOMAIN" == "help" || "$DOMAIN" == "-h" || "$DOMAIN" == "--help" ]]; then
 🤖 Marvin Init - Initialize Personal Configuration Directory
 
 USAGE:
-    marvin init [domain]
+    marvin --init [domain]
 
 DOMAINS:
     coding        - Software development (default)
@@ -37,9 +37,9 @@ DOMAINS:
     all           - Initialize all available domains
 
 EXAMPLES:
-    marvin init                  # Initialize with coding domain
-    marvin init rpg-campaign     # Initialize with RPG domain
-    marvin init all              # Initialize all domains
+    marvin --init                # Initialize with coding domain
+    marvin --init rpg-campaign   # Initialize with RPG domain
+    marvin --init all            # Initialize all domains
 
 This command creates ~/.marvin/configs/ with your personal AI configurations
 copied from the framework templates. You should then customize these files
@@ -123,7 +123,7 @@ This directory contains your personal AI configurations that will be deployed to
 
 1. **Customize templates** - Edit files starting with `template-` to match your preferences
 2. **Version control** - Initialize git and check these files into a repository
-3. **Link to projects** - Use `marvin link <domain>` in project directories
+3. **Link to projects** - Use `marvin` in project directories
 
 ## Framework Files (global/always/)
 
@@ -150,9 +150,9 @@ After customizing your configurations:
 
 ```bash
 cd /path/to/your/project
-marvin link coding              # Copy configs to project's ai-marvin/ directory
-marvin setup cursor            # Configure Cursor IDE to use configs
-marvin sync                    # Sync changes between central configs and project
+marvin                         # Link configs to project's ai-marvin/ directory
+marvin --setup cursor          # Configure Cursor IDE to use configs
+marvin --sync                  # Sync changes between central configs and project
 ```
 
 For more information, see the Marvin documentation.
@@ -180,6 +180,6 @@ echo_color $BLUE "Next steps:"
 echo "1. Customize template files in: $CONFIGS_DIR"
 echo "2. Remove 'template-' prefix when ready: mv template-identity.md identity.md"
 echo "3. Check your configs into a git repository"
-echo "4. Use 'marvin link <domain>' in project directories"
+echo "4. Use 'marvin' in project directories"
 echo
 echo_color $YELLOW "💡 Pro tip: Start by customizing global/template-identity.md with your information"
