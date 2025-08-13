@@ -32,9 +32,9 @@ git clone https://github.com/very-fine-hat/marvin.git ~/.marvin/framework
 
 ```bash
 # Initialize your personal configurations
-marvin init                      # Creates ~/.marvin/configs/ with coding domain
-marvin init rpg-campaign         # Or initialize with different domain
-marvin init all                  # Or initialize all available domains
+marvin --init                    # Creates ~/.marvin/configs/ with coding domain
+marvin --init rpg-campaign       # Or initialize with different domain
+marvin --init all                # Or initialize all available domains
 
 # Customize your configurations
 cd ~/.marvin/configs
@@ -52,15 +52,19 @@ git commit -m "Initial personal AI configurations"
 # In any project directory
 cd /path/to/your/project
 
-# Link your configurations to the project
-marvin link coding               # Creates ai-marvin/ directory
+# Link your configurations to the project (smart command!)
+marvin                           # Links coding domain OR syncs existing
+marvin writing                   # Links writing domain OR syncs existing
 
 # Configure AI tools
-marvin setup cursor              # Set up Cursor IDE integration
-marvin setup claude              # Prepare for Claude Projects
+marvin --setup cursor            # Set up Cursor IDE integration
+marvin --setup claude            # Prepare for Claude Projects
 
 # Customize project-specific context
 edit ai-marvin/project/context.md
+
+# Later: just run marvin to sync changes
+marvin                           # Automatically syncs any updates
 
 # Commit to project repository
 git add ai-marvin/
@@ -148,61 +152,73 @@ This ensures critical configurations are always processed first, regardless of f
 ## Example Use Cases
 
 ### Software Developer
-- Initialize with `marvin init coding`
+- Initialize with `marvin --init coding`
 - Customize global identity and coding domain preferences
-- Use `marvin link coding` in each project to create ai-marvin/ directory
-- Set up tools with `marvin setup cursor` and `marvin setup claude`
+- Use `marvin` in each project - automatically links coding configs
+- Set up tools with `marvin --setup cursor` and `marvin --setup claude`
 - Project teams can see and collaborate on AI configurations
 
 ### Content Creator
-- Initialize with `marvin init writing`
+- Initialize with `marvin --init writing`
 - Set up writing domain with style guides and preferences
-- Link writing configs to content projects
+- Use `marvin writing` to link writing configs to content projects
 - Consistent AI assistance across different publications and clients
 
 ### Researcher
-- Initialize with `marvin init research`
+- Initialize with `marvin --init research`
 - Configure research methodology and analysis frameworks
-- Project-specific research questions and source organization
+- Use `marvin research` for research projects
 - Maintain consistent research approach across different studies
 
 ### TTRPG Game Master
-- Initialize with `marvin init rpg-campaign`
+- Initialize with `marvin --init rpg-campaign`
 - Set up RPG domain with system-specific guidelines
-- Link to campaign directories with campaign-specific context
-- Use `marvin setup` to integrate with note-taking tools like Obsidian
+- Use `marvin rpg-campaign` in campaign directories
+- Use `marvin --setup` to integrate with note-taking tools like Obsidian
 
 ## Commands
 
 ```bash
-marvin init [domain]                  # Initialize personal configuration directory
-marvin edit <path>                    # Edit configuration file in ~/.marvin/configs/
-marvin link <domain>                  # Link configurations to current project  
-marvin setup <tool>                   # Configure specific AI tool (cursor, claude, code)
-marvin sync                           # Sync changes between personal and project configs
-marvin validate                       # Check configuration consistency
-marvin status                         # Show configuration status
-marvin update                         # Update Marvin framework from GitHub
-marvin version                        # Show version information
-marvin help                          # Show detailed help
+# Smart main command
+marvin [domain]                   # Link domain configs OR sync if already linked
+
+# Configuration flags
+marvin --init [domain]            # Initialize personal configuration directory
+marvin --setup <tool>             # Configure AI tool (cursor, claude, code)
+marvin --sync                     # Force sync between personal and project configs
+marvin --validate                 # Check configuration consistency
+marvin --status                   # Show current state and planned actions
+marvin --update                   # Update Marvin framework from GitHub
+marvin --version                  # Show version information
+marvin --help                     # Show detailed help
 ```
 
 ## Workflow
 
 The typical Marvin workflow:
 
-1. **One-time setup**: `marvin init` to create personal configurations
+1. **One-time setup**: `marvin --init` to create personal configurations
 2. **Customize**: Edit template files in `~/.marvin/configs/`
-3. **Per-project**: Use `marvin link <domain>` to copy configs to projects
-4. **Tool setup**: Use `marvin setup <tool>` to configure AI tools
-5. **Iterate**: Use `marvin sync` to keep configs in sync
+3. **Per-project**: Use `marvin` to link configs (or sync existing)
+4. **Tool setup**: Use `marvin --setup <tool>` to configure AI tools
+5. **Iterate**: Just run `marvin` to keep everything in sync
+
+### Smart Command Behavior
+
+```bash
+marvin              # In new project: links coding domain
+                    # In existing marvin project: syncs changes
+                    
+marvin writing      # In new project: links writing domain  
+                    # In existing marvin project: syncs writing configs
+```
 
 ### Sync Workflow
 
 Marvin supports bidirectional syncing:
 
-- **Personal → Project**: `marvin sync` copies updates from `~/.marvin/configs/` to current project
-- **Project → Personal**: `marvin sync` can promote useful project changes back to personal configs
+- **Personal → Project**: `marvin --sync` copies updates from `~/.marvin/configs/` to current project
+- **Project → Personal**: `marvin --sync` can promote useful project changes back to personal configs
 - **Conflict resolution**: When both sides have changes, Marvin asks which direction to sync
 
 ## Philosophy
