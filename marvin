@@ -202,9 +202,45 @@ case "$FIRST_ARG" in
             exit 1
         fi
         
-        # Update logic here (same as before)
-        git fetch origin && git reset --hard origin/main
+        # Check for uncommitted changes
+        if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+            echo_color $YELLOW "⚠️  Warning: Uncommitted changes detected"
+            read -p "Continue with update? This will reset local changes (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo_color $BLUE "Update cancelled."
+                exit 0
+            fi
+        fi
+        
+        # Fetch and update
+        echo_color $BLUE "📚 Fetching latest changes..."
+        if ! git fetch origin; then
+            echo_color $RED "❌ Failed to fetch updates from GitHub"
+            exit 1
+        fi
+        
+        echo_color $BLUE "🔄 Applying updates..."
+        if ! git reset --hard origin/main; then
+            echo_color $RED "❌ Failed to apply updates"
+            exit 1
+        fi
+        
+        # Make files executable after update
+        echo_color $BLUE "🔧 Fixing file permissions..."
+        if [[ -f "$FRAMEWORK_DIR/make-executable.sh" ]]; then
+            chmod +x "$FRAMEWORK_DIR/make-executable.sh"
+            "$FRAMEWORK_DIR/make-executable.sh"
+        else
+            # Fallback: manually fix permissions
+            chmod +x "$FRAMEWORK_DIR/marvin"
+            find "$FRAMEWORK_DIR/tools" -type f -not -name "*.sh" -not -name ".DS_Store" -exec chmod +x {} \;
+            echo "✅ Made Marvin files executable"
+        fi
+        
         echo_color $GREEN "✅ Marvin framework updated successfully!"
+        echo "   Version: $(get_version)"
+        exit 0
         ;;
     "")
         # No arguments - smart main command with default domain
