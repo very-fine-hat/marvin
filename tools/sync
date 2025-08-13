@@ -1,0 +1,203 @@
+#!/bin/bash
+# Sync configurations between personal configs and project
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
+
+# Marvin directories
+MARVIN_HOME="$HOME/.marvin"
+CONFIGS_DIR="$MARVIN_HOME/configs"
+PROJECT_AI_DIR="./ai-marvin"
+
+# Parse arguments
+DOMAIN="${1:-}"
+
+if [[ "$DOMAIN" == "help" || "$DOMAIN" == "-h" || "$DOMAIN" == "--help" ]]; then
+    cat << 'EOF'
+🤖 Marvin Sync - Sync configurations between personal and project
+
+USAGE:
+    marvin --sync [domain]
+
+EXAMPLES:
+    marvin --sync               # Sync based on detected domain
+    marvin --sync coding        # Force sync coding domain
+
+This command syncs configurations between:
+- Personal configs: ~/.marvin/configs/
+- Project configs:  ./ai-marvin/
+
+Sync behavior:
+- Detects changes in both locations
+- Prompts for direction when conflicts exist
+- Updates files and preserves project-specific changes
+EOF
+    exit 0
+fi
+
+echo_color $BLUE "🔄 Marvin: Syncing configurations..."
+
+# Check if personal configs exist
+if [[ ! -d "$CONFIGS_DIR" ]]; then
+    echo_color $RED "❌ Personal configurations not found at: $CONFIGS_DIR"
+    echo "   Run 'marvin --init' first to set up your personal configurations."
+    exit 1
+fi
+
+# Check if project has ai-marvin/
+if [[ ! -d "$PROJECT_AI_DIR" ]]; then
+    echo_color $RED "❌ No ai-marvin/ directory found in current project"
+    echo "   Run 'marvin' first to link configurations to this project."
+    exit 1
+fi
+
+# Detect domain if not specified
+if [[ -z "$DOMAIN" ]]; then
+    # Look for domain directories in ai-marvin/
+    for dir in "$PROJECT_AI_DIR"/*; do
+        if [[ -d "$dir" ]]; then
+            dirname=$(basename "$dir")
+            if [[ "$dirname" != "global" && "$dirname" != "project" ]]; then
+                DOMAIN="$dirname"
+                break
+            fi
+        fi
+    done
+    
+    if [[ -z "$DOMAIN" ]]; then
+        DOMAIN="coding"  # Default fallback
+    fi
+fi
+
+echo_color $BLUE "📦 Syncing $DOMAIN domain configurations..."
+
+# Function to check if file is newer
+is_newer() {
+    local file1="$1"
+    local file2="$2"
+    
+    if [[ ! -f "$file1" ]]; then
+        return 1  # file1 doesn't exist, so file2 is newer
+    fi
+    
+    if [[ ! -f "$file2" ]]; then
+        return 0  # file2 doesn't exist, so file1 is newer
+    fi
+    
+    [[ "$file1" -nt "$file2" ]]
+}
+
+# Function to sync directory
+sync_directory() {
+    local personal_dir="$1"
+    local project_dir="$2"
+    local dir_name="$3"
+    
+    if [[ ! -d "$personal_dir" ]]; then
+        echo_color $YELLOW "  ⚠️  Personal $dir_name directory not found: $personal_dir"
+        return
+    fi
+    
+    echo_color $BLUE "  📂 Syncing $dir_name configurations..."
+    
+    # Ensure project directory exists
+    mkdir -p "$project_dir"
+    
+    # Sync files from personal to project
+    for personal_file in "$personal_dir"/*.md; do
+        if [[ ! -f "$personal_file" ]]; then
+            continue  # No .md files in directory
+        fi
+        
+        filename=$(basename "$personal_file")
+        project_file="$project_dir/$filename"
+        
+        # Skip template files
+        if [[ "$filename" =~ ^template- ]]; then
+            continue
+        fi
+        
+        if [[ ! -f "$project_file" ]]; then
+            # File doesn't exist in project, copy it
+            echo_color $GREEN "    ➕ Adding: $filename"
+            cp "$personal_file" "$project_file"
+        elif is_newer "$personal_file" "$project_file"; then
+            # Personal file is newer, update project
+            echo_color $YELLOW "    📝 Updating: $filename (personal → project)"
+            cp "$personal_file" "$project_file"
+        elif is_newer "$project_file" "$personal_file"; then
+            # Project file is newer, ask what to do
+            echo_color $YELLOW "    ⚠️  Conflict: $filename (project is newer)"
+            read -p "    Copy project changes back to personal configs? (y/N) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo_color $BLUE "    📝 Updating: $filename (project → personal)"
+                cp "$project_file" "$personal_file"
+            else
+                echo_color $BLUE "    📝 Keeping project version, updating from personal"
+                cp "$personal_file" "$project_file"
+            fi
+        else
+            # Files are same age, check if content differs
+            if ! cmp -s "$personal_file" "$project_file"; then
+                echo_color $YELLOW "    ⚠️  Content differs: $filename"
+                read -p "    Which version to keep? (p)ersonal/(P)roject: " -n 1 -r
+                echo
+                case $REPLY in
+                    [Pp])
+                        echo_color $BLUE "    📝 Using personal version"
+                        cp "$personal_file" "$project_file"
+                        ;;
+                    *)
+                        echo_color $BLUE "    📝 Keeping project version"
+                        ;;
+                esac
+            fi
+        fi
+    done
+}
+
+# Sync global/always (framework defaults - usually don't change)
+sync_directory "$CONFIGS_DIR/global/always" "$PROJECT_AI_DIR/global/always" "global/always"
+
+# Sync global configs
+sync_directory "$CONFIGS_DIR/global" "$PROJECT_AI_DIR/global" "global"
+
+# Sync domain configs
+if [[ -d "$CONFIGS_DIR/domains/$DOMAIN" ]]; then
+    # Sync domain/always if it exists
+    if [[ -d "$CONFIGS_DIR/domains/$DOMAIN/always" ]]; then
+        sync_directory "$CONFIGS_DIR/domains/$DOMAIN/always" "$PROJECT_AI_DIR/$DOMAIN/always" "$DOMAIN/always"
+    fi
+    
+    # Sync domain configs
+    sync_directory "$CONFIGS_DIR/domains/$DOMAIN" "$PROJECT_AI_DIR/$DOMAIN" "$DOMAIN"
+else
+    echo_color $YELLOW "  ⚠️  Personal $DOMAIN domain not found in $CONFIGS_DIR/domains/"
+fi
+
+# Note: Project-specific files in ai-marvin/project/ are not synced back
+# They belong to the project, not personal configs
+
+echo_color $GREEN "✅ Sync complete!"
+echo
+echo_color $BLUE "📊 Summary:"
+echo "   Personal configs: $CONFIGS_DIR"
+echo "   Project configs:  $PROJECT_AI_DIR"
+echo "   Domain synced:    $DOMAIN"
+echo
+echo_color $YELLOW "💡 Tips:"
+echo "   - Project-specific files in ai-marvin/project/ stay with the project"
+echo "   - Global and domain changes can be synced bidirectionally"
+echo "   - Run 'marvin' again to sync after making changes"

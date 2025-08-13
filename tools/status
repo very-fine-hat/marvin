@@ -1,0 +1,317 @@
+#!/bin/bash
+# Show current Marvin status and planned actions
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+NC='\033[0m'
+
+echo_color() {
+    local color=$1
+    shift
+    echo -e "${color}$*${NC}"
+}
+
+get_version() {
+    local VERSION_FILE="$HOME/.marvin/framework/.version"
+    if [[ -f "$VERSION_FILE" ]]; then
+        cat "$VERSION_FILE"
+    elif [[ -d "$HOME/.marvin/framework/.git" ]]; then
+        cd "$HOME/.marvin/framework"
+        git describe --tags --always 2>/dev/null || echo "unknown"
+    else
+        echo "1.0.0"
+    fi
+}
+
+# Marvin directories
+MARVIN_HOME="$HOME/.marvin"
+FRAMEWORK_DIR="$MARVIN_HOME/framework"
+CONFIGS_DIR="$MARVIN_HOME/configs"
+PROJECT_AI_DIR="./ai-marvin"
+
+if [[ "${1:-}" == "help" || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    cat << 'EOF'
+🤖 Marvin Status - Show current state and planned actions
+
+USAGE:
+    marvin --status
+
+This command shows:
+- Framework version and location
+- Personal configuration status
+- Current project status
+- What 'marvin' would do in this directory
+- Suggested next steps
+
+Use this to understand the current state before running other commands.
+EOF
+    exit 0
+fi
+
+echo_color $BLUE "🤖 Marvin Configuration Status"
+echo
+
+# Framework Information
+echo_color $PURPLE "📦 Framework Information:"
+if [[ -d "$FRAMEWORK_DIR" ]]; then
+    echo "   Version: $(get_version)"
+    echo "   Location: $FRAMEWORK_DIR"
+    
+    if [[ -d "$FRAMEWORK_DIR/.git" ]]; then
+        cd "$FRAMEWORK_DIR"
+        echo "   Repository: $(git remote get-url origin 2>/dev/null || echo 'local')"
+        echo "   Branch: $(git branch --show-current 2>/dev/null || echo 'unknown')"
+        
+        # Check if updates available
+        if git fetch origin >/dev/null 2>&1; then
+            local_commit=$(git rev-parse HEAD 2>/dev/null)
+            remote_commit=$(git rev-parse origin/main 2>/dev/null || git rev-parse origin/master 2>/dev/null)
+            
+            if [[ "$local_commit" != "$remote_commit" ]]; then
+                echo_color $YELLOW "   ⚠️  Updates available (run 'marvin --update')"
+            else
+                echo_color $GREEN "   ✅ Up to date"
+            fi
+        fi
+    fi
+else
+    echo_color $RED "   ❌ Framework not found at $FRAMEWORK_DIR"
+fi
+
+echo
+
+# Personal Configuration Status
+echo_color $PURPLE "👤 Personal Configurations:"
+if [[ -d "$CONFIGS_DIR" ]]; then
+    echo_color $GREEN "   ✅ Initialized at: $CONFIGS_DIR"
+    
+    # Check git status
+    cd "$CONFIGS_DIR"
+    if [[ -d .git ]]; then
+        echo_color $GREEN "   ✅ Under version control"
+        
+        # Show git status
+        status_output=$(git status --porcelain 2>/dev/null)
+        if [[ -n "$status_output" ]]; then
+            echo_color $YELLOW "   ⚠️  Uncommitted changes:"
+            echo "$status_output" | sed 's/^/      /'
+        else
+            echo_color $GREEN "   ✅ Repository clean"
+        fi
+    else
+        echo_color $YELLOW "   ⚠️  Not under version control"
+    fi
+    
+    # Show available domains
+    if [[ -d "$CONFIGS_DIR/domains" ]]; then
+        domain_list=""
+        for domain_dir in "$CONFIGS_DIR/domains"/*; do
+            if [[ -d "$domain_dir" ]]; then
+                domain_name=$(basename "$domain_dir")
+                if [[ -z "$domain_list" ]]; then
+                    domain_list="$domain_name"
+                else
+                    domain_list="$domain_list, $domain_name"
+                fi
+            fi
+        done
+        
+        if [[ -n "$domain_list" ]]; then
+            echo "   📦 Available domains: $domain_list"
+        else
+            echo_color $YELLOW "   ⚠️  No domains configured"
+        fi
+    fi
+    
+    # Check for template files that need customization
+    template_count=0
+    for template_file in "$CONFIGS_DIR/global"/template-*.md; do
+        if [[ -f "$template_file" ]]; then
+            ((template_count++))
+        fi
+    done
+    
+    if [[ $template_count -gt 0 ]]; then
+        echo_color $YELLOW "   ⚠️  $template_count template files need customization"
+    else
+        echo_color $GREEN "   ✅ Templates customized"
+    fi
+else
+    echo_color $RED "   ❌ Not initialized (run 'marvin --init')"
+fi
+
+echo
+
+# Current Project Status
+echo_color $PURPLE "📂 Current Project Status:"
+if [[ -d "$PROJECT_AI_DIR" ]]; then
+    echo_color $GREEN "   ✅ Project linked at: $PROJECT_AI_DIR"
+    
+    # Detect domain
+    project_domain=""
+    for dir in "$PROJECT_AI_DIR"/*; do
+        if [[ -d "$dir" ]]; then
+            dirname=$(basename "$dir")
+            if [[ "$dirname" != "global" && "$dirname" != "project" ]]; then
+                project_domain="$dirname"
+                break
+            fi
+        fi
+    done
+    
+    if [[ -n "$project_domain" ]]; then
+        echo "   🎯 Domain: $project_domain"
+    else
+        echo_color $YELLOW "   ⚠️  No domain detected"
+    fi
+    
+    # Check for project context
+    if [[ -f "$PROJECT_AI_DIR/project/context.md" ]]; then
+        echo_color $GREEN "   ✅ Project context configured"
+    else
+        echo_color $YELLOW "   ⚠️  Project context missing"
+    fi
+    
+    # Check tool integrations
+    integrations_found=0
+    if [[ -d "./.cursor/rules" ]] && [[ -n "$(find ./.cursor/rules -name '*.mdc' 2>/dev/null)" ]]; then
+        cursor_count=$(find ./.cursor/rules -name '*.mdc' | wc -l | tr -d ' ')
+        echo_color $GREEN "   ✅ Cursor IDE integration ($cursor_count .mdc files)"
+        ((integrations_found++))
+    fi
+    
+    if [[ -d "./.claude-code" ]] && [[ -n "$(find ./.claude-code -name '*.md' 2>/dev/null)" ]]; then
+        code_count=$(find ./.claude-code -name '*.md' | wc -l | tr -d ' ')
+        echo_color $GREEN "   ✅ Claude Code integration ($code_count instruction files)"
+        ((integrations_found++))
+    fi
+    
+    if [[ -f "./.marvin-claude/combined-context.md" ]]; then
+        echo_color $GREEN "   ✅ Claude Projects ready"
+        ((integrations_found++))
+    fi
+    
+    if [[ $integrations_found -eq 0 ]]; then
+        echo_color $YELLOW "   ⚠️  No tool integrations configured"
+    fi
+    
+else
+    echo_color $RED "   ❌ Project not linked (run 'marvin' to link)"
+fi
+
+echo
+
+# What would 'marvin' do?
+echo_color $PURPLE "🎯 What 'marvin' would do in this directory:"
+
+if [[ ! -d "$CONFIGS_DIR" ]]; then
+    echo_color $RED "   ❌ Cannot run: Personal configs not initialized"
+    echo "   💡 Run: marvin --init"
+elif [[ ! -d "$PROJECT_AI_DIR" ]]; then
+    echo_color $BLUE "   🔗 Would LINK coding domain configurations"
+    echo "   📁 Would create: $PROJECT_AI_DIR/"
+    echo "   📋 Would copy: global configs, coding domain, project template"
+else
+    echo_color $BLUE "   🔄 Would SYNC existing configurations"
+    
+    # Check what would be synced
+    sync_needed=false
+    
+    # Check if personal configs are newer
+    if [[ -d "$CONFIGS_DIR/global" ]]; then
+        for personal_file in "$CONFIGS_DIR/global"/*.md; do
+            if [[ -f "$personal_file" ]]; then
+                filename=$(basename "$personal_file")
+                project_file="$PROJECT_AI_DIR/global/$filename"
+                
+                if [[ ! "$filename" =~ ^template- ]]; then
+                    if [[ ! -f "$project_file" ]] || [[ "$personal_file" -nt "$project_file" ]]; then
+                        if ! $sync_needed; then
+                            echo "   📝 Files to sync:"
+                            sync_needed=true
+                        fi
+                        echo "      • global/$filename (personal → project)"
+                    elif [[ "$project_file" -nt "$personal_file" ]]; then
+                        if ! $sync_needed; then
+                            echo "   📝 Files to sync:"
+                            sync_needed=true
+                        fi
+                        echo "      • global/$filename (project → personal?)"
+                    fi
+                fi
+            fi
+        done
+    fi
+    
+    if ! $sync_needed; then
+        echo_color $GREEN "   ✅ No sync needed - files are up to date"
+    fi
+fi
+
+echo
+
+# Suggested Next Steps
+echo_color $PURPLE "💡 Suggested Next Steps:"
+
+if [[ ! -d "$FRAMEWORK_DIR" ]]; then
+    echo "   1. Install Marvin framework"
+elif [[ ! -d "$CONFIGS_DIR" ]]; then
+    echo "   1. marvin --init                    # Initialize personal configs"
+    echo "   2. Customize template files in ~/.marvin/configs/"
+    echo "   3. marvin                          # Link to projects"
+elif [[ ! -d "$PROJECT_AI_DIR" ]]; then
+    echo "   1. marvin                          # Link configs to this project"
+    echo "   2. marvin --setup cursor           # Configure your AI tools"
+    echo "   3. Edit ai-marvin/project/context.md # Add project details"
+else
+    suggestions_count=0
+    
+    # Check for template files
+    if [[ -f "$CONFIGS_DIR/global/template-identity.md" ]]; then
+        ((suggestions_count++))
+        echo "   $suggestions_count. Customize ~/.marvin/configs/global/template-identity.md"
+    fi
+    
+    # Check for missing project context
+    if [[ ! -f "$PROJECT_AI_DIR/project/context.md" ]] || ! grep -q "\[Your project name\]" "$PROJECT_AI_DIR/project/context.md" 2>/dev/null; then
+        ((suggestions_count++))
+        echo "   $suggestions_count. Edit ai-marvin/project/context.md with project details"
+    fi
+    
+    # Check for missing tool integrations
+    if [[ ! -d "./.cursor/rules" ]] || [[ -z "$(find ./.cursor/rules -name '*.mdc' 2>/dev/null)" ]]; then
+        ((suggestions_count++))
+        echo "   $suggestions_count. marvin --setup cursor             # Configure Cursor IDE"
+    fi
+    
+    if [[ ! -d "./.claude-code" ]] || [[ -z "$(find ./.claude-code -name '*.md' 2>/dev/null)" ]]; then
+        ((suggestions_count++))
+        echo "   $suggestions_count. marvin --setup code               # Configure Claude Code"
+    fi
+    
+    if [[ ! -f "./.marvin-claude/combined-context.md" ]]; then
+        ((suggestions_count++))
+        echo "   $suggestions_count. marvin --setup claude             # Prepare Claude Projects"
+    fi
+    
+    # Check for git status
+    if [[ -d "$CONFIGS_DIR/.git" ]]; then
+        cd "$CONFIGS_DIR"
+        if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+            ((suggestions_count++))
+            echo "   $suggestions_count. Commit changes in ~/.marvin/configs/"
+        fi
+    fi
+    
+    if [[ $suggestions_count -eq 0 ]]; then
+        echo_color $GREEN "   🎉 Everything looks good! Marvin is ready to use."
+        echo "   💡 Run 'marvin --validate' to double-check everything"
+    fi
+fi
+
+echo
