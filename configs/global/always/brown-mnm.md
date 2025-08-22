@@ -5,7 +5,7 @@
 When you respond to any chat messages you MUST ALWAYS do the following:
 
 1. **Read ALL configuration files** - Global, domain, project, and session configs
-2. **Collect emoji IMMEDIATELY** - As you read each file, note its title emoji  
+2. **Collect emoji IMMEDIATELY** - As you read each file, note its title emoji
 3. **Include ALL emoji** - At the end of EVERY response, list all emoji from all files read
 4. **Maintain reading order** - List emoji in the order files were read
 5. **No spaces between emoji** - Concatenate directly: 🌟💻🎲📋
@@ -20,6 +20,7 @@ When you respond to any chat messages you MUST ALWAYS do the following:
 ### Emoji Collection Rules
 
 1. Each configuration file may have an emoji (or sequence) in one of these formats:
+
    - **In the first line after a markdown title**: "# Title 💩"
    - **In a YAML frontmatter description**: "description: Title 💩"
 
@@ -73,7 +74,7 @@ Emoji sequence from last response: 🌟💻🎲📋🚫🟤
 
 Source breakdown:
 🌟 - From "# My AI Identity 🌟" in global/identity.md
-💻 - From "# Coding Domain Configuration 💻" in domains/coding.md  
+💻 - From "# Coding Domain Configuration 💻" in domains/coding.md
 🎲 - From "# RPG Campaign Domain Configuration 🎲" in domains/rpg-campaign.md
 📋 - From "# Project Context 📋" in projects/current-project/context.md
 🚫🟤 - From "# AI Quality Assurance 🚫🟤" in global/brown-m-and-m.md
@@ -89,6 +90,7 @@ All configuration files were successfully read and processed.  All files have un
 ```
 
 This command helps verify:
+
 - All expected configuration files were actually read
 - Emoji were collected from correct title lines
 - Files were processed in logical order
@@ -97,12 +99,14 @@ This command helps verify:
 ## Why This Matters
 
 **Common AI Assistant Problems:**
+
 - Skipping configuration files due to length or complexity
 - Not integrating multiple sources of context properly
 - Inconsistent behavior across different sessions
 - Missing critical safety rules or preferences
 
 **The Brown M&M Test Solves This By:**
+
 - Providing immediate feedback when configs aren't read
 - Making it impossible to fake reading configurations
 - Creating accountability for comprehensive context processing
@@ -120,12 +124,14 @@ This quality assurance system is automatically integrated into Marvin:
 ### Troubleshooting
 
 **If AI responses don't include expected emoji:**
+
 1. Check that all configuration files have emoji in titles
 2. Verify AI tool is reading from correct configuration locations
 3. Confirm configuration deployment was successful
 4. Test with a simple request to isolate the issue
 
 **If emoji sequence is wrong:**
+
 1. Compare expected vs actual emoji sequence
 2. Identify which configuration files are missing or extra
 3. Check for file permission or symlink issues
@@ -134,12 +140,14 @@ This quality assurance system is automatically integrated into Marvin:
 ### Customization
 
 **Emoji Selection Guidelines:**
+
 - Choose distinctive, memorable emoji for each configuration area
 - Avoid emoji that might be filtered or unavailable in some contexts
 - Use emoji that relate to the content area when possible
 - Maintain consistency across similar configuration types
 
 **Adding New Domains:**
+
 1. Choose an appropriate emoji for the new domain
 2. Add it to the emoji reference list above
 3. Update framework tools to recognize the new emoji
@@ -147,4 +155,4 @@ This quality assurance system is automatically integrated into Marvin:
 
 ---
 
-*The Brown M&M test is named after Van Halen's famous contract rider that required a bowl of M&Ms with all brown ones removed. It was a simple test to verify that venues had read and followed all contract requirements carefully. Similarly, this emoji test verifies that AI assistants have read and processed all your configuration requirements.*
+_The Brown M&M test is named after Van Halen's famous contract rider that required a bowl of M&Ms with all brown ones removed. It was a simple test to verify that venues had read and followed all contract requirements carefully. Similarly, this emoji test verifies that AI assistants have read and processed all your configuration requirements._

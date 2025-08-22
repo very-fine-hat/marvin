@@ -102,7 +102,7 @@ EOF
 
 check_setup() {
     if [[ ! -d "$CONFIGS_DIR" ]]; then
-        echo_color $RED "❌ Marvin not set up. Run 'marvin init' first to create personal configurations."
+        echo_color $RED "❌ Marvin not set up. Run 'marvin --init' first to create personal configurations."
         exit 1
     fi
 }
