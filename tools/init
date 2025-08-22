@@ -33,12 +33,12 @@ USAGE:
 
 DOMAINS:
     coding        - Software development (default)
-    rpg-campaign  - RPG/Gaming domain
+    rpg  - RPG/Gaming domain
     all           - Initialize all available domains
 
 EXAMPLES:
     marvin --init                # Initialize with coding domain
-    marvin --init rpg-campaign   # Initialize with RPG domain
+    marvin --init rpg   # Initialize with RPG domain
     marvin --init all            # Initialize all domains
 
 This command creates ~/.marvin/configs/ with your personal AI configurations

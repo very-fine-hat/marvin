@@ -75,14 +75,14 @@ Emoji sequence from last response: 🌟💻🎲📋🚫🟤
 Source breakdown:
 🌟 - From "# My AI Identity 🌟" in global/identity.md
 💻 - From "# Coding Domain Configuration 💻" in domains/coding.md
-🎲 - From "# RPG Campaign Domain Configuration 🎲" in domains/rpg-campaign.md
+🎲 - From "# RPG Campaign Domain Configuration 🎲" in domains/rpg.md
 📋 - From "# Project Context 📋" in projects/current-project/context.md
 🚫🟤 - From "# AI Quality Assurance 🚫🟤" in global/brown-m-and-m.md
 
 Files were read in this order:
 1. global/identity.md
 2. domains/coding.md
-3. domains/rpg-campaign.md
+3. domains/rpg.md
 4. projects/current-project/context.md
 5. global/brown-m-and-m.md
 

@@ -47,7 +47,7 @@ USAGE:
 MAIN COMMAND:
     marvin                  # Link coding domain OR sync existing configs
     marvin writing          # Link writing domain OR sync existing configs
-    marvin rpg-campaign     # Link RPG domain OR sync existing configs
+    marvin rpg     # Link RPG domain OR sync existing configs
     marvin research         # Link research domain OR sync existing configs
 
 CONFIGURATION COMMANDS:
@@ -64,7 +64,7 @@ EXAMPLES:
     marvin                      # Smart default: link coding OR sync existing
     marvin writing              # Link writing configs to current project
     marvin --init               # Initialize personal configs (coding domain)
-    marvin --init rpg-campaign  # Initialize with RPG domain
+    marvin --init rpg  # Initialize with RPG domain
     marvin --init all           # Initialize all available domains
     marvin --setup cursor       # Configure Cursor IDE integration
     marvin --sync              # Force sync changes
@@ -86,7 +86,7 @@ SUPPORTED DOMAINS:
     coding      - Software development (default)
     writing     - Content creation and documentation  
     research    - Research and analysis projects
-    rpg-campaign- Tabletop RPG campaign management
+    rpg- Tabletop RPG campaign management
 
 SUPPORTED TOOLS:
     cursor      - Cursor IDE integration
@@ -249,7 +249,7 @@ case "$FIRST_ARG" in
     *)
         # Check if argument looks like a domain or old command
         case "$FIRST_ARG" in
-            "coding"|"writing"|"research"|"rpg-campaign")
+            "coding"|"writing"|"research"|"rpg")
                 # Domain specified - smart main command
                 DOMAIN="$FIRST_ARG"
                 ;;

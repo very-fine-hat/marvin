@@ -32,13 +32,13 @@ USAGE:
 
 DOMAINS:
     coding        - Software development (default)
-    rpg-campaign  - RPG/Gaming domain  
+    rpg  - RPG/Gaming domain  
     writing       - Content creation
     research      - Research and analysis
 
 EXAMPLES:
     marvin                       # Link coding domain to current project
-    marvin rpg-campaign          # Link RPG domain to current project
+    marvin rpg          # Link RPG domain to current project
 
 This command creates an ai-marvin/ directory in the current project with:
 - Global configurations (including always/ files)
