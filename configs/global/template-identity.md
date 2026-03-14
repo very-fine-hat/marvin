@@ -1,6 +1,6 @@
 # User's AI Identity 🆔
 
-_This file describes the current user's AI identity. You may want to add the deployed version of this file to .gitignore in any coding projects._
+_This file describes the current user's AI identity. You may want to add the deployed version of this file to .gitignore in any projects shared between multiple people. There may also be separate identity files for individual domains._
 
 ## Background
 

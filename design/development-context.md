@@ -14,6 +14,7 @@ This is our current TO DO List. When things are complete, change the - to a ✅
 
 - Error checking: if we run `marvin` in a .marvin directory, verify that we really want to do that and not `marvin init`
 - Come up with a different naming scheme to deply configs into the .marvin directory - the current one is confusing. Probably a named ruleset.
+- Maybe move global/always to marvin?
 
 ## Architecture
 

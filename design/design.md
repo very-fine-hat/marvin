@@ -19,9 +19,14 @@ IF YOU ARE AN LLM (e.g., Claude or ChatGPT) you should always read the marvin/RE
 ## TO DO
 
 - Reorganize so that configs contains ai-marvin which then contains all the non-tool configs
+- change `tools` to `ai-tools` for clarity
+- add `marvin` file to proc Marvin? Might be a README now? Is output by link command - fix that - copy over from QSide CRITICAL-README
+- Put into brown mnm file:  this file does not mean LLM chats should add more emoji than they would normally add
 - Create ai-marvin/user for user-level configuration (e.g., identity)
 - Implement `marvin --mnm` command to list all files associated with which emoji (or is this an LLM command?)
 - Maybe make 'marvin' an actual personality to manage the AI files? Is that useful?
+- Consider how to do identity across domains. Separate identity files for each domain? One with subsections?
+- Add a 'compare' function to Marvin that compares files and identifies new, deleted, and changed files between .marvin and the current directory
 
 ## Current High Level Process (MAY BE OUT OF DATE)
 

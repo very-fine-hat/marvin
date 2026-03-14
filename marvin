@@ -80,13 +80,13 @@ CONFIGURATION LAYERS:
     global/     - Universal identity and preferences
     domains/    - Domain-specific configurations (coding, writing, etc.)
     project/    - Project-specific context and requirements
-    always/     - Critical files read first (Brown M&M test, safety, style)
+    always/     - Critical files read first (Brown M&M test, any others)
 
 SUPPORTED DOMAINS:
     coding      - Software development (default)
     writing     - Content creation and documentation  
     research    - Research and analysis projects
-    rpg- Tabletop RPG campaign management
+    rpg         - Tabletop RPG campaign management
 
 SUPPORTED TOOLS:
     cursor      - Cursor IDE integration

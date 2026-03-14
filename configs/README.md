@@ -2,7 +2,7 @@ These are all example templates for different global rules, domain rules, and pr
 
 # Config Directories
 
-Currently there are the following
+Currently there are the following directories: TODO FINISH this
 
 # FAQ
 
